@@ -1,0 +1,93 @@
+#!/bin/bash
+#
+# * fancyview_input: input format type
+#   - ncsacombined
+#
+# * fancyview_decompress:
+#   - gzip
+#   - bzip2
+#
+# * fancyview_reverse:
+# * fancyview_limit:
+#
+script_dir=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
+# * inflater binaries
+gzip_bin='/bin/gzip'
+bzip2_bin='/bin/bzip2'
+tac_bin='/bin/tac'
+tail_bin='/bin/tail'
+head_bin='/bin/head'
+
+# * view formatters
+fancy_bin_ncsacb="$script_dir/fancylog-ncsacombined.pl"
+fancy_bin_error="$script_dir/fancylog-error.pl"
+fancy_bin_default='/bin/cat'
+
+# * Ph.1 Choose options.
+
+fancy_bin=$fancy_bin_default
+fancy_input_filters=()
+
+# * select fancy bin
+case "$fancyview_input" in
+    'ncsacombined' )
+        fancy_bin=$fancy_bin_ncsacb
+        ;;
+    'error' )
+        fancy_bin=$fancy_bin_error
+        ;;
+    * )
+        fancy_bin=$fancy_bin_default
+        ;;
+esac
+
+# * select input filter
+case "$fancyview_decompress" in
+    'gzip' )
+        fancy_input_filters=("$gzip_bin -dc")
+        ;;
+    'bzip2' )
+        fancy_input_filters=("$gzip_bin -dc")
+        ;;
+    * )
+        ;;
+esac
+
+# * choose reverse option
+if [[ ! "$fancyview_limit" =~ ^[0-9]+$ ]]; then
+    fancyview_limit=
+fi
+
+if [ "x$fancyview_reverse" == "x1" ]; then
+    if [ -n "$fancyview_limit" ]; then
+        fancy_input_filters=("${fancy_input_filters[@]}" "$tac_bin" "$head_bin -n $fancyview_limit")
+    else
+        fancy_input_filters=("${fancy_input_filters[@]}" "$tac_bin")
+    fi
+else
+    if [ -n "$fancyview_limit" ]; then
+        fancy_input_filters=("${fancy_input_filters[@]}" "$tail_bin -n $fancyview_limit")
+    fi
+fi
+
+case "x${#fancy_input_filters[@]}" in
+    'x1' )
+        ${fancy_input_filters[0]} </dev/stdin | \
+            $fancy_bin
+        ;;
+    'x2' )
+        ${fancy_input_filters[0]} </dev/stdin | \
+            ${fancy_input_filters[1]} | \
+            $fancy_bin
+        ;;
+    'x3' )
+        ${fancy_input_filters[0]} </dev/stdin | \
+            ${fancy_input_filters[1]} | \
+            ${fancy_input_filters[2]} | \
+            $fancy_bin
+        ;;
+    * )
+        $fancy_bin </dev/stdin
+        ;;
+esac
+

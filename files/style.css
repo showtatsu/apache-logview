@@ -1,0 +1,26 @@
+/* - Logstorage fancyview CSS
+ * - Tatsuya SHORIKI <show.tatsu.devel@gmail.com>
+ */
+table {
+    border-collapse: collapse;
+}
+td {
+    font-size: x-small;
+    margin: 0;
+    padding: 0 3px 0 3px;
+    border: #999 1px solid;
+    white-space: nowrap;
+}
+
+.self_ip   { color: red; }
+
+.timestamp { color: #222; }
+
+.status1xx { color: orange; }
+.status2xx { color: green; }
+.status3xx { color: orange; }
+.status4xx { color: red; }
+.status5xx { color: purple; }
+.status6xx { color: purple; }
+
+.errorlog_message { white-space: pre; }
